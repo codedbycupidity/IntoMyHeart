@@ -47,7 +47,7 @@ const heart = new Heart(scene);
 let currentBPM = 0;
 
 // WebSocket connection
-const wsClient = new WebSocketClient('ws://localhost:8080');
+const wsClient = new WebSocketClient('ws://localhost:8082');
 
 wsClient.onMessage((data) => {
   const { bpm } = data;
@@ -67,23 +67,77 @@ wsClient.onDisconnect(() => {
 // UI Elements
 const bpmDisplay = document.getElementById('bpm-display');
 const statusDisplay = document.getElementById('status');
+const statusText = document.getElementById('status-text');
+const statusDot = document.querySelector('.status-dot');
+const wsStatus = document.getElementById('ws-status');
+const arduinoStatus = document.getElementById('arduino-status');
 const instructions = document.getElementById('instructions');
+
+let wsConnected = false;
+let arduinoConnected = false;
+let lastDataTime = 0;
 
 function updateBPMDisplay(bpm) {
   bpmDisplay.textContent = Math.round(bpm);
+
+  // Mark Arduino as connected when we receive data
+  lastDataTime = Date.now();
+  if (!arduinoConnected) {
+    arduinoConnected = true;
+    updateConnectionStatus();
+  }
 }
 
-function updateStatus(connected) {
-  if (connected) {
-    statusDisplay.textContent = 'Connected';
-    statusDisplay.className = 'connected';
-    if (instructions) instructions.style.display = 'none';
+function updateConnectionStatus() {
+  // Update WebSocket status
+  if (wsConnected) {
+    wsStatus.textContent = 'Online';
+    wsStatus.className = 'detail-status ok';
   } else {
-    statusDisplay.textContent = 'Disconnected';
+    wsStatus.textContent = 'Offline';
+    wsStatus.className = 'detail-status error';
+  }
+
+  // Update Arduino status
+  if (arduinoConnected) {
+    arduinoStatus.textContent = 'Online';
+    arduinoStatus.className = 'detail-status ok';
+  } else {
+    arduinoStatus.textContent = 'Offline';
+    arduinoStatus.className = 'detail-status error';
+  }
+
+  // Update main status
+  if (wsConnected && arduinoConnected) {
+    statusDisplay.className = 'connected';
+    statusText.textContent = 'Connected';
+    statusDot.className = 'status-dot green';
+    if (instructions) instructions.style.display = 'none';
+  } else if (wsConnected && !arduinoConnected) {
+    statusDisplay.className = 'ws-only';
+    statusText.textContent = 'WS Only';
+    statusDot.className = 'status-dot orange';
+    if (instructions) instructions.style.display = 'block';
+  } else {
     statusDisplay.className = 'disconnected';
+    statusText.textContent = 'Disconnected';
+    statusDot.className = 'status-dot red';
     if (instructions) instructions.style.display = 'block';
   }
 }
+
+function updateStatus(connected) {
+  wsConnected = connected;
+  updateConnectionStatus();
+}
+
+// Check for Arduino timeout (no data for 5 seconds)
+setInterval(() => {
+  if (arduinoConnected && Date.now() - lastDataTime > 5000) {
+    arduinoConnected = false;
+    updateConnectionStatus();
+  }
+}, 1000);
 
 // Simulate button
 let simulationInterval = null;

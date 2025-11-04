@@ -63,6 +63,10 @@
       text-align: center;
       font-size: 12px;
       font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
     #status.connected {
@@ -73,6 +77,66 @@
     #status.disconnected {
       background: #ff4757;
       color: #fff;
+    }
+
+    #status.ws-only {
+      background: #ffa502;
+      color: #000;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-dot.green {
+      background: #000;
+    }
+
+    .status-dot.red {
+      background: #fff;
+    }
+
+    .status-dot.orange {
+      background: #000;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    #connection-details {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 10px;
+      color: #aaa;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 3px 0;
+    }
+
+    .detail-status {
+      font-weight: bold;
+    }
+
+    .detail-status.ok {
+      color: #2ed573;
+    }
+
+    .detail-status.error {
+      color: #ff4757;
+    }
+
+    .detail-status.warning {
+      color: #ffa502;
     }
 
     /* Controls panel */
@@ -190,7 +254,20 @@
     <div class="label">Heart Rate</div>
     <div id="bpm-display">--</div>
     <div class="label">Beats Per Minute</div>
-    <div id="status" class="disconnected">Disconnected</div>
+    <div id="status" class="disconnected">
+      <span class="status-dot red"></span>
+      <span id="status-text">Disconnected</span>
+    </div>
+    <div id="connection-details">
+      <div class="detail-row">
+        <span>WebSocket:</span>
+        <span id="ws-status" class="detail-status error">Offline</span>
+      </div>
+      <div class="detail-row">
+        <span>Arduino:</span>
+        <span id="arduino-status" class="detail-status error">Offline</span>
+      </div>
+    </div>
   </div>
 
   <!-- Instructions Panel -->
