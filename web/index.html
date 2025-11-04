@@ -25,35 +25,6 @@
       position: relative;
     }
 
-    /* Heart placeholder - will be replaced by Three.js component */
-    #heart-placeholder {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 120px;
-      color: #ff4757;
-      animation: heartbeat 1.2s ease-in-out infinite;
-      text-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
-    }
-
-    @keyframes heartbeat {
-      0%, 100% {
-        transform: translate(-50%, -50%) scale(1);
-      }
-      14% {
-        transform: translate(-50%, -50%) scale(1.15);
-      }
-      28% {
-        transform: translate(-50%, -50%) scale(1);
-      }
-      42% {
-        transform: translate(-50%, -50%) scale(1.15);
-      }
-      56% {
-        transform: translate(-50%, -50%) scale(1);
-      }
-    }
 
     /* Info panel */
     #info-panel {
@@ -212,10 +183,7 @@
 </head>
 <body>
   <!-- Main canvas container - Three.js will render here -->
-  <div id="canvas-container">
-    <!-- Placeholder heart - will be replaced by 3D heart component -->
-    <div id="heart-placeholder">❤️</div>
-  </div>
+  <div id="canvas-container"></div>
 
   <!-- BPM Info Panel -->
   <div id="info-panel">
@@ -246,6 +214,9 @@
     <span class="loading-spinner"></span>
     Loading 3D heart model...
   </div>
+
+  <!-- TWEEN.js for animations -->
+  <script src="/Tween.js"></script>
 
   <!-- Three.js application entry point -->
   <script type="module" src="/src/main.js"></script>

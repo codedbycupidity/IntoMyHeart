@@ -119,11 +119,12 @@ Arduino Sensor → Serial USB → Node.js Server → WebSocket → Browser → T
 
 ### 3D Heart Animation
 
-- Heart shape created using Bezier curves
-- Scale pulses based on BPM timing
-- Emissive glow synced with heartbeat
-- Particle system for visual effect
-- Smooth interpolation for natural animation
+- Anatomical heart model loaded from OBJ file format
+- Realistic textures and materials using MTL files
+- Scale pulses based on BPM timing using TWEEN.js
+- Smooth expansion and contraction (systole/diastole)
+- Interactive 3D controls (rotate, zoom, pan)
+- Enhanced rendering with tone mapping for vibrant colors
 
 ## Project Structure
 
@@ -134,16 +135,25 @@ IntoMyHeart/
 ├── web/
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── Heart.js        # Three.js heart 3D model
+│   │   │   └── Heart.js        # Three.js heart 3D model component
 │   │   ├── utils/
-│   │   │   └── WebSocketClient.js  # WebSocket connection handler
+│   │   │   ├── WebSocketClient.js  # WebSocket connection handler
+│   │   │   ├── OBJLoader.js    # Three.js OBJ model loader
+│   │   │   └── MTLLoader.js    # Three.js MTL material loader
 │   │   └── main.js             # Main application entry
-│   ├── public/                 # Static assets (if needed)
+│   ├── public/
+│   │   ├── models/             # 3D heart models and textures
+│   │   │   ├── heart1.obj      # 3D heart geometry
+│   │   │   ├── heart1.mtl      # Material definitions
+│   │   │   └── heart1.jpg      # Texture map
+│   │   └── Tween.js            # Animation library
 │   ├── index.html              # Main HTML file
 │   ├── package.json            # Dependencies
 │   ├── server.js               # Serial → WebSocket bridge
 │   └── vite.config.js          # Vite configuration
 ├── docs/                       # Additional documentation
+│   ├── API.md                  # API reference
+│   └── HARDWARE_SETUP.md       # Hardware setup guide
 ├── .gitignore
 └── README.md
 ```
@@ -181,18 +191,32 @@ IntoMyHeart/
 
 ## Customization
 
-### Change Heart Color
+### Adjust Heart Size
+
+Edit `web/src/components/Heart.js` line 72:
+```javascript
+object.scale.set(0.5, 0.5, 0.5); // Adjust scale (0.5 = medium size)
+```
+
+### Adjust Camera Distance
+
+Edit `web/src/main.js` line 23:
+```javascript
+camera.position.set(0, 0, 2.5); // Lower number = closer view
+```
+
+### Adjust Beat Animation Strength
+
+Edit `web/src/components/Heart.js` around line 112:
+```javascript
+const maxScale = 1.08; // Change to 1.15 for stronger beat
+```
+
+### Change Light Intensity
 
 Edit `web/src/components/Heart.js` line 40:
 ```javascript
-color: 0xff1744,  // Change this hex color code
-```
-
-### Adjust Beat Animation
-
-Edit `web/src/components/Heart.js` line 116:
-```javascript
-this.targetScale = 1.15;  // Increase for stronger beat
+const light = new THREE.DirectionalLight(0xffeedd, 1.0); // Adjust 1.0 to 0.5-2.0
 ```
 
 ### Change Sensor Pin
@@ -216,8 +240,30 @@ const int PULSE_SENSOR_PIN = A0;  // Change to different analog pin
 
 MIT
 
+## Features
+
+- Real-time heartbeat visualization with anatomical 3D heart model
+- Arduino pulse sensor integration via WebSocket
+- Simulation mode for testing without hardware
+- Interactive 3D controls (rotate, zoom, pan with mouse)
+- BPM display and connection status
+- Smooth heartbeat animations with TWEEN.js
+- Enhanced rendering with tone mapping for vibrant colors
+- Responsive design that works on any screen size
+
+## Technologies Used
+
+- **Three.js** - 3D rendering and visualization
+- **TWEEN.js** - Smooth animation interpolation
+- **Vite** - Fast development server and build tool
+- **WebSocket** - Real-time communication
+- **SerialPort (Node.js)** - Arduino serial communication
+- **Arduino** - Microcontroller for pulse sensor
+- **OBJ/MTL Loaders** - 3D model loading
+
 ## Credits
 
-- Three.js for 3D rendering
+- Three.js for 3D rendering engine
+- Original heart 3D model from [mattschroyer/heart](https://github.com/mattschroyer/heart)
 - Arduino community for pulse sensor libraries
-- Web Serial API and SerialPort for communication
+- TWEEN.js for animation library

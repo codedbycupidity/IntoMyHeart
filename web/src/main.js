@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-// TODO: Import Heart component once created
-// import { Heart } from './components/Heart.js';
+import { Heart } from './components/Heart.js';
 import { WebSocketClient } from './utils/WebSocketClient.js';
 
 // Hide loading indicator and placeholder once everything is loaded
@@ -21,55 +20,31 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 0, 5);
+camera.position.set(0, 0, 2.5); // Even closer view
 
 // Renderer setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
+// Enhanced color output for more vibrant colors
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
 
 // Add renderer to canvas container
 const canvasContainer = document.getElementById('canvas-container');
 canvasContainer.appendChild(renderer.domElement);
 
-// Hide placeholder heart when 3D scene is ready
-const placeholder = document.getElementById('heart-placeholder');
-if (placeholder) {
-  placeholder.style.display = 'none';
-}
-
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.minDistance = 2;
-controls.maxDistance = 10;
+controls.minDistance = 1;
+controls.maxDistance = 8;
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
-
-const pointLight1 = new THREE.PointLight(0xff4757, 1, 100);
-pointLight1.position.set(5, 5, 5);
-scene.add(pointLight1);
-
-const pointLight2 = new THREE.PointLight(0x5f27cd, 0.5, 100);
-pointLight2.position.set(-5, -5, 5);
-scene.add(pointLight2);
-
-// TODO: Create heart - placeholder for now
-// const heart = new Heart(scene);
+// Create heart (Heart component adds its own lighting)
+const heart = new Heart(scene);
 let currentBPM = 0;
-
-// Temporary placeholder: Add a simple geometry for testing
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshPhongMaterial({
-  color: 0xff4757,
-  emissive: 0xff4757,
-  emissiveIntensity: 0.3
-});
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
 
 // WebSocket connection
 const wsClient = new WebSocketClient('ws://localhost:8080');
@@ -78,8 +53,7 @@ wsClient.onMessage((data) => {
   const { bpm } = data;
   updateBPMDisplay(bpm);
   currentBPM = bpm;
-  // TODO: Update heart component
-  // heart.setBPM(bpm);
+  heart.setBPM(bpm);
 });
 
 wsClient.onConnect(() => {
@@ -128,8 +102,7 @@ simulateBtn.addEventListener('click', () => {
       simulatedBPM = 70 + Math.random() * 10;
       updateBPMDisplay(simulatedBPM);
       currentBPM = simulatedBPM;
-      // TODO: Update heart component
-      // heart.setBPM(simulatedBPM);
+      heart.setBPM(simulatedBPM);
     }, 1000);
     simulateBtn.textContent = 'Stop Simulation';
     updateStatus(true);
@@ -153,13 +126,8 @@ window.addEventListener('resize', () => {
 function animate() {
   requestAnimationFrame(animate);
 
-  // Rotate placeholder cube
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
-
-  // TODO: Update heart component
-  // heart.update();
-
+  heart.update();
+  TWEEN.update();
   controls.update();
   renderer.render(scene, camera);
 }
