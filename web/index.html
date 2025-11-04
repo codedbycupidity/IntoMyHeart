@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Into My Heart - 3D Heartbeat Visualization</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* Main canvas container for Three.js */
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* Heart placeholder - will be replaced by Three.js component */
+    #heart-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 120px;
+      color: #ff4757;
+      animation: heartbeat 1.2s ease-in-out infinite;
+      text-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
+    }
+
+    @keyframes heartbeat {
+      0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+      14% {
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+      28% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+      42% {
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+      56% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    /* Info panel */
+    #info-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+      min-width: 200px;
+    }
+
+    #bpm-display {
+      font-size: 48px;
+      font-weight: bold;
+      color: #ff4757;
+      text-align: center;
+      margin-bottom: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .label {
+      font-size: 14px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    #status {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    #status.connected {
+      background: #2ed573;
+      color: #000;
+    }
+
+    #status.disconnected {
+      background: #ff4757;
+      color: #fff;
+    }
+
+    /* Controls panel */
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 25px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      background: #5f27cd;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(95, 39, 205, 0.3);
+    }
+
+    button:hover {
+      background: #341f97;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(95, 39, 205, 0.5);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* Loading indicator */
+    .loading {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #aaa;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #5f27cd;
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: -5px;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Instructions overlay (hidden when connected) */
+    #instructions {
+      position: absolute;
+      top: 50%;
+      right: 30px;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 300px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #instructions h3 {
+      color: #5f27cd;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    #instructions ul {
+      list-style: none;
+      padding-left: 0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #instructions li {
+      margin-bottom: 8px;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    #instructions li:before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #5f27cd;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main canvas container - Three.js will render here -->
+  <div id="canvas-container">
+    <!-- Placeholder heart - will be replaced by 3D heart component -->
+    <div id="heart-placeholder">❤️</div>
+  </div>
+
+  <!-- BPM Info Panel -->
+  <div id="info-panel">
+    <div class="label">Heart Rate</div>
+    <div id="bpm-display">--</div>
+    <div class="label">Beats Per Minute</div>
+    <div id="status" class="disconnected">Disconnected</div>
+  </div>
+
+  <!-- Instructions Panel -->
+  <div id="instructions">
+    <h3>Getting Started</h3>
+    <ul>
+      <li>Connect your Arduino pulse sensor</li>
+      <li>Start the backend server</li>
+      <li>Or click "Simulate" to test</li>
+    </ul>
+  </div>
+
+  <!-- Control Buttons -->
+  <div id="controls">
+    <button id="simulate-btn">Simulate Heartbeat</button>
+    <button id="reset-btn">Reset View</button>
+  </div>
+
+  <!-- Loading indicator (shown while Three.js loads) -->
+  <div class="loading" id="loading">
+    <span class="loading-spinner"></span>
+    Loading 3D heart model...
+  </div>
+
+  <!-- Three.js application entry point -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
