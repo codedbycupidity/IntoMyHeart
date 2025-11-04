@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Heart } from './components/Heart.js';
 import { WebSocketClient } from './utils/WebSocketClient.js';
+import { WaveformVisualizer } from './components/WaveformVisualizer.js';
 
 // Hide loading indicator and placeholder once everything is loaded
 window.addEventListener('load', () => {
@@ -46,14 +47,30 @@ controls.maxDistance = 8;
 const heart = new Heart(scene);
 let currentBPM = 0;
 
+// Create waveform visualizer
+const waveform = new WaveformVisualizer('waveform-canvas');
+
 // WebSocket connection
 const wsClient = new WebSocketClient('ws://localhost:8082');
 
 wsClient.onMessage((data) => {
-  const { bpm } = data;
-  updateBPMDisplay(bpm);
-  currentBPM = bpm;
-  heart.setBPM(bpm);
+  const { bpm, raw, waveform: waveformValue } = data;
+
+  // Update BPM when heartbeat is detected
+  if (bpm !== undefined) {
+    updateBPMDisplay(bpm);
+    currentBPM = bpm;
+    heart.setBPM(bpm);
+  }
+
+  // Update waveform with continuous data stream
+  if (waveformValue !== undefined) {
+    waveform.addDataPoint(waveformValue);
+  }
+  // Fallback to raw data if waveform not available (backward compatibility)
+  else if (raw !== undefined) {
+    waveform.addDataPoint(raw);
+  }
 });
 
 wsClient.onConnect(() => {
@@ -141,14 +158,18 @@ setInterval(() => {
 
 // Simulate button
 let simulationInterval = null;
+let waveformSimulationInterval = null;
 const simulateBtn = document.getElementById('simulate-btn');
 
 simulateBtn.addEventListener('click', () => {
   if (simulationInterval) {
     clearInterval(simulationInterval);
+    clearInterval(waveformSimulationInterval);
     simulationInterval = null;
+    waveformSimulationInterval = null;
     simulateBtn.textContent = 'Simulate Heartbeat';
     updateStatus(false);
+    waveform.clear();
   } else {
     let simulatedBPM = 75;
     simulationInterval = setInterval(() => {
@@ -158,6 +179,12 @@ simulateBtn.addEventListener('click', () => {
       currentBPM = simulatedBPM;
       heart.setBPM(simulatedBPM);
     }, 1000);
+
+    // Simulate waveform at higher frequency (30 Hz)
+    waveformSimulationInterval = setInterval(() => {
+      waveform.simulateHeartbeat(simulatedBPM);
+    }, 33);
+
     simulateBtn.textContent = 'Stop Simulation';
     updateStatus(true);
     if (instructions) instructions.style.display = 'none';

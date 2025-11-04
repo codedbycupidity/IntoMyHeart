@@ -159,6 +159,15 @@ void loop() {
     lastAboveThreshold = false;
   }
 
+  // Send continuous waveform data for web visualization (every 50ms)
+  static unsigned long lastWaveformTime = 0;
+  if (millis() - lastWaveformTime > 50) {
+    Serial.print("{\"waveform\":");
+    Serial.print(smoothed);
+    Serial.println("}");
+    lastWaveformTime = millis();
+  }
+
   // Debug output
   if (millis() - lastDebugTime > 1000) {
     Serial.print("Smooth:");
