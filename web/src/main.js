@@ -56,11 +56,13 @@ const wsClient = new WebSocketClient('ws://localhost:8082');
 wsClient.onMessage((data) => {
   const { bpm, raw, waveform: waveformValue } = data;
 
-  // Update BPM when heartbeat is detected
+  // Update BPM when heartbeat is detected and trigger 3D heart beat
   if (bpm !== undefined) {
     updateBPMDisplay(bpm);
     currentBPM = bpm;
     heart.setBPM(bpm);
+    // Trigger heart beat in sync with actual heartbeat detection
+    heart.beat();
   }
 
   // Update waveform with continuous data stream

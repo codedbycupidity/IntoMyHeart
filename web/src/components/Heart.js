@@ -83,19 +83,15 @@ export class Heart {
     this.beatInterval = 60000 / bpm; // Convert BPM to milliseconds
   }
 
-  update() {
-    if (!this.heartGroup || !this.isLoaded) return;
-
-    // BPM-based heartbeat animation
-    if (this.bpm > 0 && this.isBeating) {
-      const currentTime = Date.now();
-      const timeSinceLastBeat = currentTime - this.lastBeatTime;
-
-      if (timeSinceLastBeat >= this.beatInterval) {
-        this.lastBeatTime = currentTime;
-        this.triggerBeat();
-      }
+  // Trigger beat manually (called when Arduino detects heartbeat)
+  beat() {
+    if (this.isLoaded && this.isBeating) {
+      this.triggerBeat();
     }
+  }
+
+  update() {
+    // No automatic beating - now triggered by actual heartbeat events
   }
 
   triggerBeat() {
@@ -104,10 +100,10 @@ export class Heart {
       TWEEN.remove(this.heartbeatTween);
     }
 
-    // Create heartbeat animation using TWEEN
-    const expandDuration = 200; // Faster expansion (systole)
-    const contractDuration = 300; // Slower contraction (diastole)
-    const maxScale = 1.08; // 8% expansion
+    // Create heartbeat animation using TWEEN - more dramatic
+    const expandDuration = 150; // Faster expansion (systole)
+    const contractDuration = 250; // Slower contraction (diastole)
+    const maxScale = 1.20; // 20% expansion - much more noticeable
 
     this.heartbeatTween = new TWEEN.Tween(this.beatScale)
       .to({ value: maxScale }, expandDuration)
