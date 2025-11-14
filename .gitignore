@@ -27,3 +27,4 @@ npm-debug.log*
 
 # Claude
 .claude
+docs/TECHNICAL_IMPLEMENTATION.md
